@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-avaz-dev-38b06-authRole",
+      "UnauthRoleArn": "arn:aws:iam::344693946187:role/amplify-avaz-dev-38b06-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::344693946187:role/amplify-avaz-dev-38b06-authRole",
+      "Region": "ap-south-1",
+      "DeploymentBucketName": "amplify-avaz-dev-38b06-deployment",
+      "UnauthRoleName": "amplify-avaz-dev-38b06-unauthRole",
+      "StackName": "amplify-avaz-dev-38b06",
+      "StackId": "arn:aws:cloudformation:ap-south-1:344693946187:stack/amplify-avaz-dev-38b06/c46f06b0-1b20-11f1-9d76-02096df4b11d",
+      "AmplifyAppId": "d1gneo2vicb9yc"
+    },
+    "categories": {
+      "auth": {
+        "avaz49035321": {}
+      }
+    }
+  }
+}
