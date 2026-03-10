@@ -1,5 +1,16 @@
 import { create } from 'zustand';
 import { audioService } from '../services/audioService';
+import { PermissionsAndroid, Platform } from 'react-native';
+import RNFS from 'react-native-fs';
+async function requestMicPermission() {
+  if (Platform.OS !== 'android') return true;
+
+  const granted = await PermissionsAndroid.request(
+    PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+  );
+
+  return granted === PermissionsAndroid.RESULTS.GRANTED;
+}
 
 type RecordingState = {
   isRecording: boolean;
@@ -20,12 +31,17 @@ export const useRecordingStore = create<RecordingState>(set => ({
   audioPath: null,
 
   startRecording: async () => {
-    const path = `avaz_${Date.now()}.m4a`;
+    const allowed = await requestMicPermission();
 
+    if (!allowed) {
+      console.log('Microphone permission denied');
+      return;
+    }
+
+    const path = `${RNFS.DocumentDirectoryPath}/avaz_${Date.now()}.m4a`;
     await audioService.startRecording(path, e => {
       set({ recordingTime: e.currentPosition });
 
-      // enforce 3 minute limit
       if (e.currentPosition >= 180000) {
         audioService.stopRecording();
         set({ isRecording: false });

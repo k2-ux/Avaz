@@ -1,23 +1,42 @@
-// authService.ts
-
-import { signIn, signUp, getCurrentUser, signOut } from 'aws-amplify/auth';
+import {
+  signUp,
+  signIn,
+  signOut,
+  getCurrentUser,
+  confirmSignUp,
+} from 'aws-amplify/auth';
 
 export const authService = {
-  async signup(username: string, password: string) {
+  async signup(email: string, password: string) {
     return signUp({
-      username,
+      username: email,
       password,
     });
   },
 
-  async login(username: string, password: string) {
-    return signIn({
-      username,
-      password,
+  async confirmSignup(email: string, code: string) {
+    return confirmSignUp({
+      username: email,
+      confirmationCode: code,
     });
   },
 
-  async getUser() {
+  async login(email: string, password: string) {
+    const result = await signIn({
+      username: email,
+      password,
+    });
+
+    console.log('SignIn result:', result);
+
+    if (!result.isSignedIn) {
+      throw new Error(result.nextStep?.signInStep);
+    }
+
+    return result;
+  },
+
+  async currentUser() {
     return getCurrentUser();
   },
 
