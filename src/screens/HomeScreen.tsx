@@ -1,6 +1,11 @@
 import React, { useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native'; // <-- changed import
 import Animated, {
   FadeInDown,
   FadeInRight,
@@ -30,16 +35,16 @@ export default function HomeScreen({ navigation }: any) {
     loadEntries();
   }, []);
 
-const playEntry = async (entry: Entry) => {
-  if (entry.synced) {
-    if (entry.audioUrl) {
-      const url = await getS3Url(entry.audioUrl);
-      await startPlayback(url);
+  const playEntry = async (entry: Entry) => {
+    if (entry.synced) {
+      if (entry.audioUrl) {
+        const url = await getS3Url(entry.audioUrl);
+        await startPlayback(url);
+      }
+    } else {
+      await startPlayback(entry.audioPath);
     }
-  } else {
-    await startPlayback(entry.audioPath);
-  }
-};
+  };
   // FAB animation
   const fabScale = useSharedValue(1);
   const fabAnimatedStyle = useAnimatedStyle(() => ({

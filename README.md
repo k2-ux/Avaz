@@ -1,97 +1,240 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Avaz — Cloud-Synced Voice Diary (React Native + AWS)
 
-# Getting Started
+Avaz is a cross-platform mobile voice diary that allows users to record personal audio entries and automatically synchronize them to the cloud. The application demonstrates a production-style mobile architecture combining React Native with AWS Cognito authentication and Amazon S3 storage.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+The project focuses on offline-first design, secure user authentication, and cloud synchronization. Audio entries are recorded locally, uploaded to S3 when the user is authenticated, and streamed from the cloud when needed.
 
-## Step 1: Start Metro
+---
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## Overview
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+Avaz is designed as a personal audio journal. Users can:
 
-```sh
-# Using npm
-npm start
+- Record voice entries
+- View a timeline of previous recordings
+- Automatically sync recordings to the cloud
+- Stream recordings directly from S3 after upload
 
-# OR using Yarn
-yarn start
+The app supports offline recording and automatically uploads entries once the user logs in.
+
+---
+
+## Key Features
+
+### Secure Authentication
+
+User authentication is handled using AWS Cognito. Each user receives a unique identity that is mapped to AWS credentials through Cognito Identity Pools.
+
+### Offline-First Recording
+
+Audio entries are first stored locally on the device. This ensures recordings work even without network connectivity.
+
+### Automatic Cloud Sync
+
+Once the user logs in, the app detects unsynced entries and uploads them to Amazon S3.
+
+### Per-User Cloud Storage
+
+Each user’s recordings are stored in an isolated S3 folder based on their Cognito identity ID.
+
+### Streaming Playback
+
+After upload, recordings are streamed from S3 using signed URLs instead of local storage.
+
+---
+
+## Architecture
+
+The system follows a modern mobile cloud architecture.
+
+```
+React Native App
+       │
+       ▼
+AWS Cognito (User Authentication)
+       │
+       ▼
+Cognito Identity Pool
+       │
+       ▼
+Temporary AWS Credentials
+       │
+       ▼
+Amazon S3 (Audio Storage)
 ```
 
-## Step 2: Build and run your app
+Workflow:
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+1. User records audio
+2. Audio saved locally on device
+3. User logs in via Cognito
+4. App obtains temporary AWS credentials
+5. Unsynced recordings upload to S3
+6. Local file is removed
+7. Playback streams from S3 using signed URLs
 
-### Android
+---
 
-```sh
-# Using npm
-npm run android
+## Technology Stack
 
-# OR using Yarn
-yarn android
+Frontend
+
+- React Native
+- TypeScript
+- Zustand (state management)
+- React Navigation
+- React Native Reanimated
+
+Audio
+
+- Nitro Sound / MediaPlayer integration
+- Local file system storage via react-native-fs
+
+Backend (AWS)
+
+- AWS Cognito User Pools (authentication)
+- Cognito Identity Pools (temporary AWS credentials)
+- Amazon S3 (audio storage)
+
+Libraries
+
+- aws-amplify
+- react-native-get-random-values
+- web-streams-polyfill
+- buffer
+
+---
+
+## Project Structure
+
+```
+src
+ ├─ navigation
+ │   └─ AppNavigator.tsx
+ │
+ ├─ screens
+ │   ├─ LoginScreen.tsx
+ │   ├─ SignupScreen.tsx
+ │   ├─ HomeScreen.tsx
+ │   ├─ RecordScreen.tsx
+ │   └─ PreviewScreen.tsx
+ │
+ ├─ services
+ │   ├─ amplify.ts
+ │   ├─ authService.ts
+ │   ├─ s3Service.ts
+ │   └─ syncService.ts
+ │
+ ├─ store
+ │   ├─ authStore.ts
+ │   ├─ entryStore.ts
+ │   └─ playerStore.ts
+ │
+ ├─ models
+ │   └─ Entry.ts
+ │
+ └─ utils
+     └─ time.ts
 ```
 
-### iOS
+---
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+## Synchronization System
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+The synchronization logic ensures that local recordings are uploaded once authentication and AWS credentials are available.
 
-```sh
-bundle install
+Process:
+
+1. App starts
+2. Authentication state is checked
+3. Unsynced entries are identified
+4. AWS credentials are obtained
+5. Audio files are uploaded to S3
+6. Local files are deleted after successful upload
+
+Example S3 path:
+
+```
+users/{identityId}/{entryId}.m4a
 ```
 
-Then, and every time you update your native dependencies, run:
+---
 
-```sh
-bundle exec pod install
+## Security Model
+
+Security is handled using AWS Identity and Access Management (IAM).
+
+Each authenticated user receives temporary credentials with permissions limited to:
+
+```
+s3:PutObject
+s3:GetObject
+s3:DeleteObject
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+Access is restricted to their own storage path.
 
-```sh
-# Using npm
-npm run ios
+---
 
-# OR using Yarn
-yarn ios
+## Running the Project
+
+### 1 Install Dependencies
+
+```
+npm install
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+### 2 Start Metro
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+```
+npx react-native start
+```
 
-## Step 3: Modify your app
+### 3 Run Android
 
-Now that you have successfully run the app, let's make changes!
+```
+npx react-native run-android
+```
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+---
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+## Environment Requirements
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+- Node.js
+- React Native CLI
+- Android Studio / Android Emulator
+- AWS Account
+- Amplify CLI
 
-## Congratulations! :tada:
+---
 
-You've successfully run and modified your React Native App. :partying_face:
+## Future Improvements
 
-### Now what?
+Potential enhancements for the project include:
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+- DynamoDB metadata storage for entries
+- Multi-device synchronization
+- Waveform visualization
+- Audio tagging and search
+- Background upload service
+- End-to-end encryption
 
-# Troubleshooting
+---
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+## Learning Goals
 
-# Learn More
+This project demonstrates:
 
-To learn more about React Native, take a look at the following resources:
+- React Native mobile architecture
+- Offline-first application design
+- Cloud authentication with AWS Cognito
+- Secure file uploads to Amazon S3
+- Temporary AWS credentials using identity pools
+- Mobile cloud synchronization patterns
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+---
+
+## Author
+
+Kamal Khastagir
+React Native Developer

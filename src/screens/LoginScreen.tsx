@@ -6,8 +6,8 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  TouchableOpacity, // changed from 'react-native-gesture-handler'
 } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import LinearGradient from 'react-native-linear-gradient';
 
